@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <cmath>
 
 // Nama :Novandi Kevin Pratama
 // NPM : 20081010005
@@ -43,7 +44,16 @@ public:
     {
         return price;
     }
+
+    void showMenu()
+    {
+        cout << "Sku: " << sku << endl;
+        cout << "Name: " << name << endl;
+        cout << "Description: " << description << endl;
+        cout << "Price: " << price << endl;
+    }
 };
+
 // Table Class
 class Table
 {
@@ -87,6 +97,7 @@ public:
         this->isOccupied = false;
     }
 };
+
 // Waiter Class
 class Waiter
 {
@@ -128,6 +139,7 @@ public:
         return password;
     }
 };
+
 // Detail Bill Class
 class DetailBill : public Menu
 {
@@ -157,6 +169,19 @@ public:
         return totalPrice;
     }
 };
+
+enum StatusOrder
+{
+    Waiting,
+    Served,
+    Paid,
+};
+
+const string StatusStr[] = {
+    "Waiting",
+    "Served",
+    "Paid"};
+
 // Bill Class
 class Bill
 {
@@ -170,7 +195,7 @@ private:
     Table *table;
     Waiter waiter;
     bool isPayed;
-    string status;
+    StatusOrder status;
 
 public:
     static int countBill;
@@ -182,15 +207,18 @@ public:
         this->table->setOnOccupy();
         this->waiter = waiter;
         this->isPayed = false;
-        this->status = "Waiting";
+        this->status = Waiting;
         this->total = 0;
         this->pay = 0;
         this->change = 0;
+
         // Set faktur
-        this->faktur = "";
-        this->faktur += to_string(table->getTableNumber());
-        this->faktur += ".";
-        this->faktur += to_string(countBill);
+        faktur = "";
+        for (int i = 0; i < 6 - floor(countBill / 10); i++)
+        {
+            faktur += "0";
+        }
+        faktur += to_string(countBill);
     }
 
     Bill()
@@ -199,7 +227,7 @@ public:
         this->table = nullptr;
         this->waiter = Waiter();
         this->isPayed = false;
-        this->status = "Waiting";
+        this->status = Waiting;
         this->total = 0;
         this->pay = 0;
         this->change = 0;
@@ -210,6 +238,11 @@ public:
     string getFaktur()
     {
         return faktur;
+    }
+
+    double getTotal()
+    {
+        return total;
     }
 
     bool isEmptyCart()
@@ -224,30 +257,40 @@ public:
         cout << "Table Number : " << table->getTableNumber() << endl;
         cout << "Number of Seats : " << table->getNumberOfSeats() << endl;
         cout << "Waiter Name : " << waiter.getName() << endl;
-        cout << "Status : " << status << endl;
+        cout << "Status : " << StatusStr[status] << endl;
         cout << "Total : " << total << endl;
     }
 
     void servingMenu()
     {
-        if (status == "Waiting")
+        system("cls");
+        if (status == Waiting)
         {
-            status = "Serving";
+            status = Served;
+
+            cout << "Faktur : " << faktur << endl;
+            cout << "Success!!" << endl;
+            cout << "Order is served" << endl;
         }
         else
         {
+            cout << "Faktur : " << faktur << endl;
+            cout << "Failed!!" << endl;
             cout << "Bill is already serving" << endl;
-            system("pause");
         }
+        system("pause");
     }
 
     void payBill(double pay)
     {
-        system("cls");
-        if (status == "Serving")
+
+        if (status == Served)
         {
             if (pay < total)
             {
+                system("cls");
+                cout << "Faktur : " << faktur << endl;
+                cout << "Failed!!" << endl;
                 cout << "Payment is not enough" << endl;
             }
             else
@@ -255,7 +298,7 @@ public:
                 this->pay = pay;
                 this->change = pay - total;
                 this->isPayed = true;
-                this->status = "Payed";
+                this->status = Paid;
                 this->table->setOccupy();
 
                 this->printReceipt();
@@ -263,6 +306,9 @@ public:
         }
         else
         {
+            system("cls");
+            cout << "Faktur : " << faktur << endl;
+            cout << "Failed!!" << endl;
             cout << "Bill is not serving" << endl;
         }
         system("pause");
@@ -270,15 +316,11 @@ public:
 
     void printReceipt()
     {
-
-        cout << "==========================================================" << endl;
-        cout << "Receipt" << endl;
-        cout << "==========================================================" << endl;
         cout << "Table Number: " << table->getTableNumber() << endl;
         cout << "Customer Name: " << customer_name << endl;
         cout << "Faktur: " << faktur << endl;
         cout << "==========================================================" << endl;
-        cout << "Menu" << endl;
+        cout << "Menu Ordered" << endl;
         cout << "==========================================================" << endl;
         for (int i = 0; i < detail.size(); i++)
         {
@@ -350,6 +392,7 @@ public:
         }
     }
 };
+
 //  Restaurant Class
 class Restaurant
 {
@@ -359,9 +402,14 @@ private:
     vector<Waiter> listWaiter;
     vector<Bill> listBill;
 
+    string restaurant_name;
+    string address;
+    double income;
+
 public:
     Restaurant()
     {
+        this->income = 0;
         // Dummy Menu
         this->listMenu.push_back(Menu("1", "Nasi Goreng Kambing", "Nasi goreng dengan daging kambing muda", 10000));
         this->listMenu.push_back(Menu("2", "Nasi Uduk", "Nasi uduk enak", 10000));
@@ -383,6 +431,22 @@ public:
         this->listTable.push_back(Table(8, 10));
         this->listTable.push_back(Table(9, 10));
         this->listTable.push_back(Table(10, 10));
+
+        address = "Rungkut Madya, Surabaya";
+        restaurant_name = "Warung Nasi";
+    }
+
+    void setIdentity(string restaurant_name, string address)
+    {
+        this->restaurant_name = restaurant_name;
+        this->address = address;
+    }
+
+    void showIdentity()
+    {
+        cout << "Restaurant Name : " << restaurant_name << endl;
+        cout << "Address : " << address << endl;
+        cout << "==========================================================" << endl;
     }
 
     void showOrder()
@@ -398,9 +462,11 @@ public:
     {
         for (int i = 0; i < listMenu.size(); i++)
         {
-            cout << listMenu[i].getSku() << ". " << listMenu[i].getName() << endl
+            cout << "SKU :" << listMenu[i].getSku() << endl
+                 << listMenu[i].getName() << endl
                  << listMenu[i].getDescription() << endl
-                 << listMenu[i].getPrice() << endl;
+                 << "Harga : " << listMenu[i].getPrice() << endl
+                 << endl;
         }
     }
 
@@ -428,6 +494,54 @@ public:
         return Menu("", "", "", 0);
     }
 
+    void addMenu(Menu menu)
+    {
+        if (isExistMenu(menu.getSku()))
+        {
+            cout << "Failed !" << endl;
+            cout << "Menu already exist" << endl;
+            system("pause");
+        }
+        else
+        {
+            listMenu.push_back(menu);
+        }
+    }
+
+    void removeMenu(string sku)
+    {
+        for (int i = 0; i < listMenu.size(); i++)
+        {
+            if (listMenu[i].getSku() == sku)
+            {
+                listMenu.erase(listMenu.begin() + i);
+            }
+        }
+    }
+
+    void editMenu(string sku, Menu menu)
+    {
+        for (int i = 0; i < listMenu.size(); i++)
+        {
+            if (listMenu[i].getSku() == sku)
+            {
+                listMenu[i] = menu;
+            }
+        }
+    }
+
+    bool isExistTable(int table_number)
+    {
+        for (int i = 0; i < listTable.size(); i++)
+        {
+            if (listTable[i].getTableNumber() == table_number)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     bool isAvailableTable(int tableNumber)
     {
         for (int i = 0; i < listTable.size(); i++)
@@ -440,33 +554,39 @@ public:
         return false;
     }
 
-    void addBill(Bill bill)
+    void addTable(Table table)
     {
-        listBill.push_back(bill);
+        if (isExistTable(table.getTableNumber()))
+        {
+            cout << "Failed !" << endl;
+            cout << "Table already exist" << endl;
+            system("pause");
+        }
+        else
+        {
+            listTable.push_back(table);
+        }
     }
 
-    bool checkLogin(string email, string password)
+    void removeTable(int tableNumber)
     {
-        for (int i = 0; i < listWaiter.size(); i++)
+        for (int i = 0; i < listTable.size(); i++)
         {
-            if (listWaiter[i].getEmail() == email && listWaiter[i].getPassword() == password)
+            if (listTable[i].getTableNumber() == tableNumber)
             {
-                return true;
+                if (listTable[i].getIsOccupied())
+                {
+                    cout << "Failed !" << endl;
+                    cout << "Table is occupied" << endl;
+                    system("pause");
+                }
+                else
+                {
+                    listTable.erase(listTable.begin() + i);
+                }
+                break;
             }
         }
-        return false;
-    }
-
-    Waiter getUser(string email, string password)
-    {
-        for (int i = 0; i < listWaiter.size(); i++)
-        {
-            if (listWaiter[i].getEmail() == email && listWaiter[i].getPassword() == password)
-            {
-                return listWaiter[i];
-            }
-        }
-        return Waiter();
     }
 
     void showAvailableTable()
@@ -499,6 +619,30 @@ public:
         return table;
     }
 
+    bool checkLogin(string email, string password)
+    {
+        for (int i = 0; i < listWaiter.size(); i++)
+        {
+            if (listWaiter[i].getEmail() == email && listWaiter[i].getPassword() == password)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    Waiter getUser(string email, string password)
+    {
+        for (int i = 0; i < listWaiter.size(); i++)
+        {
+            if (listWaiter[i].getEmail() == email && listWaiter[i].getPassword() == password)
+            {
+                return listWaiter[i];
+            }
+        }
+        return Waiter();
+    }
+
     bool isExistBill(string faktur)
     {
         for (int i = 0; i < listBill.size(); i++)
@@ -523,6 +667,17 @@ public:
             }
         }
         return temp;
+    }
+
+    void addBill(Bill bill)
+    {
+        income += bill.getTotal();
+        listBill.push_back(bill);
+    }
+
+    double getIncome()
+    {
+        return income;
     }
 };
 
@@ -560,7 +715,6 @@ int main(int argc, const char **argv)
         cout << "Password: ";
         cin >> password;
         isLogin = restaurant.checkLogin(email, password);
-
         if (!isLogin)
         {
             cout << "Wrong email or password" << endl;
@@ -579,16 +733,27 @@ int main(int argc, const char **argv)
     while (!exitApp)
     {
         system("cls");
-        cin.ignore();
         cout << "==========================================================" << endl;
         cout << "Main Menu" << endl;
         cout << "==========================================================" << endl;
-        cout << "1. Order" << endl;
-        cout << "2. Show All Order" << endl;
-        cout << "3. Serving Menu" << endl;
-        cout << "4. Pay Bill" << endl;
-        cout << "5. List Available Table" << endl;
-        cout << "6. Exit" << endl;
+        restaurant.showIdentity();
+        cout << "Total Order : " << Bill::countBill << endl;
+        cout << "Total Income : " << restaurant.getIncome() << endl;
+
+        cout << "==========================================================" << endl;
+        cout << "1.\tSet Profile Restaurant" << endl;
+        cout << "2.\tShow Menu Restaurant" << endl;
+        cout << "3.\tAdd Menu Restaurant" << endl;
+        cout << "4.\tEdit Menu Restaurant" << endl;
+        cout << "5.\tRemove Menu Restaurant" << endl;
+        cout << "6.\tAdd Order" << endl;
+        cout << "7.\tShow All Order" << endl;
+        cout << "8.\tServing Menu" << endl;
+        cout << "9.\tPay Bill" << endl;
+        cout << "10.\tShow Available Table" << endl;
+        cout << "11.\tAdd Table" << endl;
+        cout << "12.\tRemove Table" << endl;
+        cout << "13.\tExit" << endl;
         cout << "==========================================================" << endl;
         cout << "Please choose: ";
         cin >> choice;
@@ -596,16 +761,119 @@ int main(int argc, const char **argv)
         {
         case 1:
         {
-            // Make Order
+
             system("cls");
             cout << "==========================================================" << endl;
-            cout << "Make New Order" << endl;
+            cout << "Profile Restaurant" << endl;
             cout << "==========================================================" << endl;
+            string name, address;
+            cin.ignore();
+            cout << "Name Restaurant : ";
+            getline(cin, name);
+            cout << "Address Restaurant : ";
+            getline(cin, address);
+            restaurant.setIdentity(name, address);
+            break;
+        }
+        case 2:
+        {
+            system("cls");
+            cout << "==========================================================" << endl;
+            cout << "List Menu Our Restaurant" << endl;
+            cout << "==========================================================" << endl;
+            restaurant.showMenu();
+            system("pause");
+            break;
+        }
+        case 3:
+        {
+            system("cls");
+            cout << "==========================================================" << endl;
+            cout << "Add Menu" << endl;
+            cout << "==========================================================" << endl;
+            string name, description, sku;
+            double price;
+            cin.ignore();
+            cout << "SKU Menu : ";
+            getline(cin, sku);
+            cout << "Name Menu : ";
+            getline(cin, name);
+            cout << "Description Menu : ";
+            getline(cin, description);
+            cout << "Price Menu : ";
+            cin >> price;
+            restaurant.addMenu(Menu(sku, name, description, price));
+            break;
+        }
+        case 4:
+        {
+            system("cls");
+            cout << "==========================================================" << endl;
+            cout << "Edit Menu" << endl;
+            cout << "==========================================================" << endl;
+
+            string sku;
+            cin.ignore();
+            cout << "SKU Menu : ";
+            getline(cin, sku);
+            if (restaurant.isExistMenu(sku))
+            {
+                cout << "Last Menu :" << endl;
+                restaurant.getMenu(sku).showMenu();
+                cout << "==========================================================" << endl;
+                cout << "New Menu :" << endl;
+                string name, description;
+                double price;
+                cout << "Name Menu : ";
+                getline(cin, name);
+                cout << "Description Menu : ";
+                getline(cin, description);
+                cout << "Price Menu : ";
+                cin >> price;
+                restaurant.editMenu(sku, Menu(sku, name, description, price));
+            }
+            else
+            {
+                cout << "Menu not found" << endl;
+                system("pause");
+            }
+
+            break;
+        }
+        case 5:
+        {
+            system("cls");
+            cout << "==========================================================" << endl;
+            cout << "Remove Menu" << endl;
+            cout << "==========================================================" << endl;
+
+            string sku;
+            cin.ignore();
+            cout << "SKU Menu : ";
+            getline(cin, sku);
+            if (restaurant.isExistMenu(sku))
+            {
+                restaurant.removeMenu(sku);
+            }
+            else
+            {
+                cout << "Menu not found" << endl;
+                system("pause");
+            }
+            break;
+        }
+        case 6:
+        {
+            // Make Order
+            system("cls");
 
             bool tableCheck = false;
             int tableNumber;
             while (!tableCheck)
             {
+                cout << "==========================================================" << endl;
+                cout << "Make New Order" << endl;
+                cout << "==========================================================" << endl;
                 cout << "Please choose table number: ";
                 cin >> tableNumber;
                 if (restaurant.isAvailableTable(tableNumber))
@@ -624,7 +892,8 @@ int main(int argc, const char **argv)
 
             string customer = "";
             cout << "Please enter customer name: ";
-            cin >> customer;
+            cin.ignore();
+            getline(cin, customer);
             Bill bill = Bill(restaurant.getTable(tableNumber), user, customer);
             bool isOrder = true;
             while (isOrder)
@@ -633,8 +902,8 @@ int main(int argc, const char **argv)
                 bill.shortInformation();
                 cout << "==========================================================" << endl;
                 cout << "Choose :" << endl;
-                cout << "1. Add Menu" << endl;
-                cout << "2. Remove Menu" << endl;
+                cout << "1. Add Menu in Cart" << endl;
+                cout << "2. Remove Menu in Cart" << endl;
                 cout << "3. Show Menu" << endl;
                 cout << "4. Show Cart" << endl;
                 cout << "5. Done" << endl;
@@ -705,6 +974,11 @@ int main(int argc, const char **argv)
                     }
                     else
                     {
+                        system("cls");
+                        cout << "==========================================================" << endl;
+                        cout << "Success Order Saved" << endl;
+                        cout << "==========================================================" << endl;
+                        system("pause");
                         isOrder = false;
                     }
 
@@ -723,7 +997,8 @@ int main(int argc, const char **argv)
 
             break;
         }
-        case 2:
+        case 7:
+        {
             system("cls");
             cout << "==========================================================" << endl;
             cout << "List All Order" << endl;
@@ -731,7 +1006,8 @@ int main(int argc, const char **argv)
             restaurant.showOrder();
             system("pause");
             break;
-        case 3:
+        }
+        case 8:
         {
             system("cls");
             cout << "==========================================================" << endl;
@@ -753,7 +1029,7 @@ int main(int argc, const char **argv)
 
             break;
         }
-        case 4:
+        case 9:
         {
             // Pay Bill
             system("cls");
@@ -770,7 +1046,8 @@ int main(int argc, const char **argv)
                 double payment;
                 cout << "Please Input Payment: ";
                 cin >> payment;
-
+                system("cls");
+                restaurant.showIdentity();
                 bill->payBill(payment);
             }
             else
@@ -780,16 +1057,61 @@ int main(int argc, const char **argv)
             }
             break;
         }
-        case 5:
+        case 10:
+        {
             system("cls");
             restaurant.showAvailableTable();
             system("pause");
             break;
-        case 6:
+        }
+        case 11:
+        {
+            system("cls");
+            // Add table
+            cout << "==========================================================" << endl;
+            cout << "Add Table" << endl;
+            cout << "==========================================================" << endl;
+            int tableNumber;
+            int seatNumber;
+            cout << "Please Input Table Number: ";
+            cin >> tableNumber;
+            cout << "Please Input Seat Number: ";
+            cin >> seatNumber;
+            restaurant.addTable(Table(tableNumber, seatNumber));
+            break;
+        }
+        case 12:
+        {
+            system("cls");
+            cout << "==========================================================" << endl;
+            cout << "Remove Table" << endl;
+            cout << "==========================================================" << endl;
+            int tableNumber;
+            cout << "Please Input Table Number: ";
+            cin >> tableNumber;
+            if (restaurant.isExistTable(tableNumber))
+            {
+                restaurant.removeTable(tableNumber);
+            }
+            else
+            {
+                cout << "Table not found" << endl;
+                system("pause");
+            }
+            break;
+        }
+        case 13:
+        {
             cout << "Good Bye !" << endl;
             exitApp = true;
             break;
+        }
         default:
+            system("cls");
+            cout << "==========================================================" << endl;
+            cout << "Wrong Input" << endl;
+            cout << "==========================================================" << endl;
+            system("pause");
             break;
         }
     }
