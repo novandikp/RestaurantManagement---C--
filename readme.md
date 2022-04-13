@@ -1,4 +1,4 @@
-# Tugas UTS Sisten Informasi Restoran Sederhana
+# Tugas UTS Sistem Informasi Restoran Sederhana
 ### PEMROGRAMAN BERORIENTASI OBYEK  
 
 
