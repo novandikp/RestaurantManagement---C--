@@ -336,6 +336,7 @@ public:
 
     void setTotal()
     {
+        total = 0;
         for (int i = 0; i < detail.size(); i++)
         {
             total += detail[i].getTotalPrice();
@@ -575,7 +576,7 @@ public:
         {
             if (listTable[i].getTableNumber() == tableNumber)
             {
-                if (listTable[i].getIsOccupied())
+                if (!listTable[i].getIsOccupied())
                 {
                     cout << "Failed !" << endl;
                     cout << "Table is occupied" << endl;
@@ -685,21 +686,22 @@ public:
 // Count Bill
 int Bill::countBill = 0;
 
-int main(int argc, const char **argv)
+class View : Restaurant
 {
-    // Clear screen
-    system("cls");
-
-    Restaurant restaurant;
+private:
     Waiter user;
 
-    // Login page
-    string email;
-    string password;
-    bool isLogin = false;
-    while (!isLogin)
+public:
+    void start()
     {
+        system("cls");
+        loginPage(1);
+    }
 
+    void loginPage(int i)
+    {
+        string email;
+        string password;
         cout << "==========================================================" << endl;
         cout << "Welcome to Restaurant" << endl;
         cout << "==========================================================" << endl;
@@ -712,410 +714,587 @@ int main(int argc, const char **argv)
              << endl;
         cout << "Please login to continue" << endl;
         cout << "Email: ";
-        cin >> email;
+        getline(cin, email);
         cout << "Password: ";
-        cin >> password;
-        isLogin = restaurant.checkLogin(email, password);
-        if (!isLogin)
+        getline(cin, password);
+        if (i > 3)
+        {
+            cout << "You have tried too many times" << endl;
+            system("pause");
+            exitApp();
+        }
+        else if (!checkLogin(email, password))
         {
             cout << "Wrong email or password" << endl;
             system("pause");
             system("cls");
+            loginPage(i + 1);
         }
+
         else
         {
-            user = restaurant.getUser(email, password);
+            user = getUser(email, password);
+            mainPage();
         }
     }
 
-    // Main Menu
-    int choice;
-    bool exitApp = false;
-    while (!exitApp)
+    void editprofileRestaurantPage()
     {
         system("cls");
+        // Input name and address
+        string name;
+        string address;
         cout << "==========================================================" << endl;
-        cout << "Main Menu" << endl;
+        cout << "Edit Profile Restaurant" << endl;
         cout << "==========================================================" << endl;
-        restaurant.showIdentity();
-        cout << "Total Order : " << Bill::countBill << endl;
-        cout << "Total Income : " << restaurant.getIncome() << endl;
+        showIdentity();
+        cout << "Name: ";
+        cin.ignore();
+        getline(cin, name);
+        cout << "Address: ";
+        getline(cin, address);
+        setIdentity(name, address);
+    }
 
-        cout << "==========================================================" << endl;
-        cout << "1.\tSet Profile Restaurant" << endl;
-        cout << "2.\tShow Menu Restaurant" << endl;
-        cout << "3.\tAdd Menu Restaurant" << endl;
-        cout << "4.\tEdit Menu Restaurant" << endl;
-        cout << "5.\tRemove Menu Restaurant" << endl;
-        cout << "6.\tAdd Order" << endl;
-        cout << "7.\tShow All Order" << endl;
-        cout << "8.\tServing Menu" << endl;
-        cout << "9.\tPay Bill" << endl;
-        cout << "10.\tShow Available Table" << endl;
-        cout << "11.\tAdd Table" << endl;
-        cout << "12.\tRemove Table" << endl;
-        cout << "13.\tExit" << endl;
-        cout << "==========================================================" << endl;
-        cout << "Please choose: ";
-        cin >> choice;
-        switch (choice)
-        {
-        case 1:
-        {
-
-            system("cls");
-            cout << "==========================================================" << endl;
-            cout << "Profile Restaurant" << endl;
-            cout << "==========================================================" << endl;
-            string name, address;
-            cin.ignore();
-            cout << "Name Restaurant : ";
-            getline(cin, name);
-            cout << "Address Restaurant : ";
-            getline(cin, address);
-            restaurant.setIdentity(name, address);
-            break;
-        }
-        case 2:
+    void mainPage()
+    {
+        int pilihan;
+        do
         {
             system("cls");
             cout << "==========================================================" << endl;
-            cout << "List Menu Our Restaurant" << endl;
+            cout << "Welcome to Restaurant" << endl;
             cout << "==========================================================" << endl;
-            restaurant.showMenu();
+            showIdentity();
+            cout << "Income : Rp. " << getIncome() << endl;
+            cout << "Order Count : " << Bill::countBill << endl;
+            cout << "0. Profile Restaurant" << endl;
+            cout << "1. Menu" << endl;
+            cout << "2. Table" << endl;
+            cout << "3. Order" << endl;
+            cout << "4. Exit" << endl;
+            cout << "==========================================================" << endl;
+            cout << "Pilihan : ";
+            cin >> pilihan;
+            switch (pilihan)
+            {
+            case 0:
+                editprofileRestaurantPage();
+                break;
+            case 1:
+                menuPage();
+                break;
+            case 2:
+                tablePage();
+                break;
+            case 3:
+                orderPage();
+                break;
+            case 4:
+                exitApp();
+                break;
+            default:
+                cout << "Wrong input" << endl;
+                system("pause");
+                break;
+            }
+        } while (pilihan != 4);
+    }
+
+    void addMenuPage()
+    {
+        string name;
+        int price;
+        string sku;
+        int pilihan;
+        string description;
+        system("cls");
+        cout << "==========================================================" << endl;
+        cout << "Add Menu" << endl;
+        cout << "==========================================================" << endl;
+        cin.ignore();
+        cout << "Sku : ";
+        getline(cin, sku);
+        cout << "Name : ";
+        getline(cin, name);
+        cout << "Description : ";
+        getline(cin, description);
+        cout << "Price : ";
+        cin >> price;
+        addMenu(Menu(sku, name, description, price));
+    }
+
+    void removeMenuPage()
+    {
+
+        system("cls");
+        string sku;
+        cout << "==========================================================" << endl;
+        cout << "Remove Menu" << endl;
+        cout << "==========================================================" << endl;
+        cin.ignore();
+        cout << "Input Sku want to remove : ";
+        getline(cin, sku);
+        removeMenu(sku);
+    }
+
+    void editMenuPage()
+    {
+        system("cls");
+        string name;
+        int price;
+        string sku;
+        int pilihan;
+        string description;
+        cout << "==========================================================" << endl;
+        cout << "Edit Menu" << endl;
+        cout << "==========================================================" << endl;
+        cin.ignore();
+        cout << "Sku : ";
+        getline(cin, sku);
+
+        // check data
+        if (!isExistMenu(sku))
+        {
+            cout << "Menu not found" << endl;
             system("pause");
-            break;
+            return;
         }
-        case 3:
-        {
-            system("cls");
-            cout << "==========================================================" << endl;
-            cout << "Add Menu" << endl;
-            cout << "==========================================================" << endl;
-            string name, description, sku;
-            double price;
-            cin.ignore();
-            cout << "SKU Menu : ";
-            getline(cin, sku);
-            cout << "Name Menu : ";
-            getline(cin, name);
-            cout << "Description Menu : ";
-            getline(cin, description);
-            cout << "Price Menu : ";
-            cin >> price;
-            restaurant.addMenu(Menu(sku, name, description, price));
-            break;
-        }
-        case 4:
-        {
-            system("cls");
-            cout << "==========================================================" << endl;
-            cout << "Edit Menu" << endl;
-            cout << "==========================================================" << endl;
 
-            string sku;
-            cin.ignore();
-            cout << "SKU Menu : ";
-            getline(cin, sku);
-            if (restaurant.isExistMenu(sku))
+        Menu menu = getMenu(sku);
+        cout << endl
+             << "Last Data : " << endl;
+        menu.showMenu();
+        cout << endl
+             << "New Data : " << endl;
+        cout
+            << "Name : ";
+        getline(cin, name);
+        cout << "Description : ";
+        getline(cin, description);
+        cout << "Price : ";
+        cin >> price;
+        editMenu(sku, Menu(sku, name, description, price));
+    }
+
+    void menuPage()
+    {
+        int pilihan;
+        do
+        {
+            system("cls");
+            cout << "==========================================================" << endl;
+            cout << "Welcome to Restaurant" << endl;
+            cout << "==========================================================" << endl;
+            cout << "1. Add Menu" << endl;
+            cout << "2. Remove Menu" << endl;
+            cout << "3. Edit Menu" << endl;
+            cout << "4. Show Menu" << endl;
+            cout << "5. Back" << endl;
+            cout << "==========================================================" << endl;
+            cout << "Pilihan : ";
+            cin >> pilihan;
+            switch (pilihan)
             {
-                cout << "Last Menu :" << endl;
-                restaurant.getMenu(sku).showMenu();
-                cout << "==========================================================" << endl;
-                cout << "New Menu :" << endl;
-                string name, description;
-                double price;
-                cout << "Name Menu : ";
-                getline(cin, name);
-                cout << "Description Menu : ";
-                getline(cin, description);
-                cout << "Price Menu : ";
-                cin >> price;
-                restaurant.editMenu(sku, Menu(sku, name, description, price));
-            }
-            else
-            {
-                cout << "Menu not found" << endl;
+            case 1:
+                addMenuPage();
+                break;
+            case 2:
+                removeMenuPage();
+                break;
+            case 3:
+                editMenuPage();
+                break;
+            case 4:
+                system("cls");
+                cout << "Menu in Our Restaurant" << endl;
+                showMenu();
                 system("pause");
-            }
-
-            break;
-        }
-        case 5:
-        {
-            system("cls");
-            cout << "==========================================================" << endl;
-            cout << "Remove Menu" << endl;
-            cout << "==========================================================" << endl;
-
-            string sku;
-            cin.ignore();
-            cout << "SKU Menu : ";
-            getline(cin, sku);
-            if (restaurant.isExistMenu(sku))
-            {
-                restaurant.removeMenu(sku);
-            }
-            else
-            {
-                cout << "Menu not found" << endl;
+                break;
+            case 5:
+                mainPage();
+                break;
+            default:
+                cout << "Wrong input" << endl;
                 system("pause");
+                break;
             }
-            break;
-        }
-        case 6:
-        {
-            // Make Order
-            system("cls");
+        } while (pilihan != 5);
+    }
 
-            bool tableCheck = false;
-            int tableNumber;
-            while (!tableCheck)
+    void addTablePage()
+    {
+        system("cls");
+        int number;
+        int seats;
+        cout << "==========================================================" << endl;
+        cout << "Add Table" << endl;
+        cout << "==========================================================" << endl;
+        cin.ignore();
+        cout << "Number : ";
+        cin >> number;
+        cout << "Seats : ";
+        cin >> seats;
+        addTable(Table(number, seats));
+    }
+
+    void removeTablePage()
+    {
+        system("cls");
+        int number;
+        cout << "==========================================================" << endl;
+        cout << "Remove Table" << endl;
+        cout << "==========================================================" << endl;
+
+        cout << "Number : ";
+        cin >> number;
+        removeTable(number);
+    }
+
+    void tablePage()
+    {
+        int pilihan;
+        do
+        {
+            system("cls");
+            cout << "==========================================================" << endl;
+            cout << "Welcome to Restaurant" << endl;
+            cout << "==========================================================" << endl;
+            cout << "1. Add Table" << endl;
+            cout << "2. Remove Table" << endl;
+            cout << "3. Show Available Table" << endl;
+            cout << "4. Back" << endl;
+            cout << "==========================================================" << endl;
+            cout << "Pilihan : ";
+            cin >> pilihan;
+            switch (pilihan)
             {
-                cout << "==========================================================" << endl;
-                cout << "Make New Order" << endl;
-                cout << "==========================================================" << endl;
-                cout << "Please choose table number: ";
-                cin >> tableNumber;
-                if (restaurant.isAvailableTable(tableNumber))
+            case 1:
+                addTablePage();
+                break;
+            case 2:
+                removeTablePage();
+                break;
+            case 3:
+                system("cls");
+                showAvailableTable();
+                system("pause");
+                break;
+            case 4:
+                mainPage();
+                break;
+            default:
+                cout << "Wrong input" << endl;
+                system("pause");
+                break;
+            }
+        } while (pilihan != 4);
+    }
+
+    void addOrderPage()
+    {
+        // Question about customer ,table
+        string customer;
+        int table;
+        int pilihan;
+        do
+        {
+            system("cls");
+            cout << "==========================================================" << endl;
+            cout << "Add Order" << endl;
+            cout << "==========================================================" << endl;
+            cout << "1. Add Order" << endl;
+            cout << "2. Back" << endl;
+            cout << "==========================================================" << endl;
+            cout << "Pilihan : ";
+            cin >> pilihan;
+            switch (pilihan)
+            {
+            case 1:
+                cin.ignore();
+                cout << "Customer : ";
+                getline(cin, customer);
+                cout << "Table : ";
+                cin >> table;
+                if (isAvailableTable(table))
                 {
-                    tableCheck = true;
+                    detailOrderPage(Bill(getTable(table), user, customer));
                 }
                 else
                 {
-                    system("cls");
-                    cout
-                        << "Table not available or not found" << endl;
+                    cout << "Table is not available" << endl;
                     system("pause");
-                    system("cls");
                 }
-            }
-
-            string customer = "";
-            cout << "Please enter customer name: ";
-            cin.ignore();
-            getline(cin, customer);
-            Bill bill = Bill(restaurant.getTable(tableNumber), user, customer);
-            bool isOrder = true;
-            while (isOrder)
-            {
-                system("cls");
-                bill.shortInformation();
-                cout << "==========================================================" << endl;
-                cout << "Choose :" << endl;
-                cout << "1. Add Menu in Cart" << endl;
-                cout << "2. Remove Menu in Cart" << endl;
-                cout << "3. Show Menu" << endl;
-                cout << "4. Show Cart" << endl;
-                cout << "5. Done" << endl;
-                cout << "==========================================================" << endl;
-                cout << "Please choose: ";
-                cin >> choice;
-                switch (choice)
-                {
-                case 1:
-                {
-                    // Add detail Bill
-                    system("cls");
-
-                    cout
-                        << "Please Input SKU Menu" << endl;
-                    string sku;
-                    cin >> sku;
-                    if (restaurant.isExistMenu(sku))
-                    {
-                        Menu menu = restaurant.getMenu(sku);
-                        int quantity;
-                        cout << "Please Input Quantity" << endl;
-                        cin >> quantity;
-                        bill.addMenu(menu, quantity);
-                    }
-                    else
-                    {
-                        cout << "Menu not found" << endl;
-                        system("pause");
-                    }
-                    break;
-                }
-                case 2:
-                {
-                    // Remove detail Bill
-                    system("cls");
-                    cout << "Please Input SKU Menu in Cart to remove" << endl;
-                    string sku;
-                    cin >> sku;
-                    bill.removeMenu(sku);
-                    break;
-                }
-                case 3:
-                    // Show Menu
-                    system("cls");
-                    cout << "==========================================================" << endl;
-                    cout << "List Menu Our Restaurant" << endl;
-                    cout << "==========================================================" << endl;
-                    restaurant.showMenu();
-                    system("pause");
-                    break;
-                case 4:
-                    system("cls");
-                    cout << "==========================================================" << endl;
-                    cout << "Your Cart" << endl;
-                    cout << "==========================================================" << endl;
-                    bill.showCart();
-                    system("pause");
-                    break;
-                case 5:
-                    if (bill.isEmptyCart())
-                    {
-                        system("cls");
-                        cout << "==========================================================" << endl;
-                        cout << "Your Cart is Empty Please Add Minimal 1 Menu" << endl;
-                        cout << "==========================================================" << endl;
-                        system("pause");
-                    }
-                    else
-                    {
-                        system("cls");
-                        cout << "==========================================================" << endl;
-                        cout << "Success Order Saved" << endl;
-                        cout << "==========================================================" << endl;
-                        system("pause");
-                        isOrder = false;
-                    }
-
-                    break;
-                default:
-                    system("cls");
-                    cout << "==========================================================" << endl;
-                    cout << "Wrong Input" << endl;
-                    cout << "==========================================================" << endl;
-                    system("pause");
-                    break;
-                }
-            }
-
-            restaurant.addBill(bill);
-
-            break;
-        }
-        case 7:
-        {
-            system("cls");
-            cout << "==========================================================" << endl;
-            cout << "List All Order" << endl;
-            cout << "==========================================================" << endl;
-            restaurant.showOrder();
-            system("pause");
-            break;
-        }
-        case 8:
-        {
-            system("cls");
-            cout << "==========================================================" << endl;
-            cout << "Serving Menu" << endl;
-            cout << "==========================================================" << endl;
-            string faktur;
-            cout << "Please Input Faktur: ";
-            cin >> faktur;
-            if (restaurant.isExistBill(faktur))
-            {
-                Bill *bill = restaurant.getBill(faktur);
-                bill->servingMenu();
-            }
-            else
-            {
-                cout << "Bill not found" << endl;
+                break;
+            case 2:
+                break;
+            default:
+                cout << "Wrong input" << endl;
                 system("pause");
+                break;
             }
-
-            break;
-        }
-        case 9:
-        {
-            // Pay Bill
-            system("cls");
-            cout << "==========================================================" << endl;
-            cout << "Pay Bill" << endl;
-            cout << "==========================================================" << endl;
-            cout << "Please Input Faktur: ";
-            string faktur;
-            cin >> faktur;
-            if (restaurant.isExistBill(faktur))
-            {
-                Bill *bill = restaurant.getBill(faktur);
-                bill->shortInformation();
-                double payment;
-                cout << "Please Input Payment: ";
-                cin >> payment;
-                system("cls");
-                restaurant.showIdentity();
-                bill->payBill(payment);
-            }
-            else
-            {
-                cout << "Bill not found" << endl;
-                system("pause");
-            }
-            break;
-        }
-        case 10:
-        {
-            system("cls");
-            restaurant.showAvailableTable();
-            system("pause");
-            break;
-        }
-        case 11:
-        {
-            system("cls");
-            // Add table
-            cout << "==========================================================" << endl;
-            cout << "Add Table" << endl;
-            cout << "==========================================================" << endl;
-            int tableNumber;
-            int seatNumber;
-            cout << "Please Input Table Number: ";
-            cin >> tableNumber;
-            cout << "Please Input Seat Number: ";
-            cin >> seatNumber;
-            restaurant.addTable(Table(tableNumber, seatNumber));
-            break;
-        }
-        case 12:
-        {
-            system("cls");
-            cout << "==========================================================" << endl;
-            cout << "Remove Table" << endl;
-            cout << "==========================================================" << endl;
-            int tableNumber;
-            cout << "Please Input Table Number: ";
-            cin >> tableNumber;
-            if (restaurant.isExistTable(tableNumber))
-            {
-                restaurant.removeTable(tableNumber);
-            }
-            else
-            {
-                cout << "Table not found" << endl;
-                system("pause");
-            }
-            break;
-        }
-        case 13:
-        {
-            cout << "Good Bye !" << endl;
-            exitApp = true;
-            break;
-        }
-        default:
-            system("cls");
-            cout << "==========================================================" << endl;
-            cout << "Wrong Input" << endl;
-            cout << "==========================================================" << endl;
-            system("pause");
-            break;
-        }
+        } while (pilihan != 2);
     }
 
+    void addDetailBill(Bill *bill)
+    {
+        system("cls");
+        // add detail bill from sku and quantity
+        string sku;
+        int quantity;
+        cout << "==========================================================" << endl;
+        cout << "Add Detail Bill" << endl;
+        cout << "==========================================================" << endl;
+        // Input sku and quantity
+        cin.ignore();
+        cout << "Input SKU Menu : ";
+        getline(cin, sku);
+        // Check sku menu if exist
+        if (!isExistMenu(sku))
+        {
+            cout << "Sku not found" << endl;
+            system("pause");
+            return;
+        }
+        cout << "Input Quantity : ";
+        cin >> quantity;
+        bill->addMenu(getMenu(sku), quantity);
+    }
+
+    void removeDetailBill(Bill *bill)
+    {
+        system("cls");
+        string sku;
+        int quantity;
+        cin.ignore();
+        cout << "Input SKU Menu : ";
+        getline(cin, sku);
+        bill->removeMenu(sku);
+    }
+
+    void detailOrderPage(Bill bill)
+    {
+        // add detailbill, remove detaill bill, show menu, show cart, done
+        int pilihan;
+        do
+        {
+            system("cls");
+            bill.shortInformation();
+            cout << "==========================================================" << endl;
+            cout << "Detail Order" << endl;
+            cout << "==========================================================" << endl;
+            cout << "1. Add Detail Bill" << endl;
+            cout << "2. Remove Detail Bill" << endl;
+            cout << "3. Show Menu" << endl;
+            cout << "4. Show Cart" << endl;
+            cout << "5. Done" << endl;
+            cout << "==========================================================" << endl;
+            cout << "Pilihan : ";
+            cin >> pilihan;
+            switch (pilihan)
+            {
+            case 1:
+                addDetailBill(&bill);
+                break;
+            case 2:
+                removeDetailBill(&bill);
+                break;
+            case 3:
+                system("cls");
+                cout << "Our Menu" << endl;
+                showMenu();
+                system("pause");
+                break;
+            case 4:
+                system("cls");
+                cout << "Your cart : " << endl;
+                bill.showCart();
+                system("pause");
+                break;
+            case 5:
+                if (bill.isEmptyCart())
+                {
+                    system("cls");
+                    cout << "==========================================================" << endl;
+                    cout << "Your Cart is Empty Please Add Minimal 1 Menu" << endl;
+                    cout << "==========================================================" << endl;
+                    system("pause");
+                    pilihan = 0;
+                }
+                else
+                {
+                    addBill(bill);
+                    system("cls");
+                    cout << "==========================================================" << endl;
+                    cout << "Success Order Saved" << endl;
+                    cout << "==========================================================" << endl;
+                    system("pause");
+                }
+                break;
+            default:
+                cout << "Wrong input" << endl;
+                system("pause");
+                break;
+            }
+        } while (pilihan != 5);
+    }
+
+    void serveOrderPage()
+    {
+        int pilihan;
+        do
+        {
+            system("cls");
+            cout << "==========================================================" << endl;
+            cout << "Serve Order" << endl;
+            cout << "==========================================================" << endl;
+            cout << "1. Serve Order" << endl;
+            cout << "2. Back" << endl;
+            cout << "==========================================================" << endl;
+            cout << "Pilihan : ";
+            cin >> pilihan;
+            switch (pilihan)
+            {
+            case 1:
+            {
+                string faktur;
+                cout << "Please Input Faktur: ";
+                cin >> faktur;
+                if (isExistBill(faktur))
+                {
+                    Bill *bill = getBill(faktur);
+                    bill->servingMenu();
+                }
+                else
+                {
+                    cout << "Bill not found" << endl;
+                    system("pause");
+                }
+                break;
+            }
+            case 2:
+                break;
+            default:
+                cout << "Wrong input" << endl;
+                system("pause");
+                break;
+            }
+        } while (pilihan != 2);
+    }
+
+    void payOrderPage()
+    {
+        int pilihan;
+        do
+        {
+            system("cls");
+            cout << "==========================================================" << endl;
+            cout << "Pay Order" << endl;
+            cout << "==========================================================" << endl;
+            cout << "1. Pay Order" << endl;
+            cout << "2. Back" << endl;
+            cout << "==========================================================" << endl;
+            cout << "Pilihan : ";
+            cin >> pilihan;
+            switch (pilihan)
+            {
+            case 1:
+            {
+                string faktur;
+                cout << "Please Input Faktur: ";
+                cin >> faktur;
+                if (isExistBill(faktur))
+                {
+                    system("cls");
+                    Bill *bill = getBill(faktur);
+                    bill->shortInformation();
+                    // Input payment
+                    double payment;
+                    cout << "Input Payment : ";
+                    cin >> payment;
+                    system("cls");
+                    showIdentity();
+                    bill->payBill(payment);
+                }
+                else
+                {
+                    cout << "Bill not found" << endl;
+                    system("pause");
+                }
+                break;
+            }
+            case 2:
+                break;
+            default:
+                cout << "Wrong input" << endl;
+                system("pause");
+                break;
+            }
+        } while (pilihan != 2);
+    }
+
+    void orderPage()
+    {
+        // Show order , add order, serve order, pay order
+        int pilihan;
+        do
+        {
+            system("cls");
+            cout << "==========================================================" << endl;
+            cout << "Welcome to Restaurant" << endl;
+            cout << "==========================================================" << endl;
+            cout << "1. Show Order" << endl;
+            cout << "2. Add Order" << endl;
+            cout << "3. Serve Order" << endl;
+            cout << "4. Pay Order" << endl;
+            cout << "5. Back" << endl;
+            cout << "==========================================================" << endl;
+            cout << "Pilihan : ";
+            cin >> pilihan;
+            switch (pilihan)
+            {
+            case 1:
+                system("cls");
+                cout << "==========================================================" << endl;
+                cout << "List Order" << endl;
+                cout << "==========================================================" << endl;
+                showOrder();
+                system("pause");
+                break;
+            case 2:
+                addOrderPage();
+                break;
+            case 3:
+                serveOrderPage();
+                break;
+            case 4:
+                payOrderPage();
+                break;
+            case 5:
+                mainPage();
+                break;
+            default:
+                cout << "Wrong input" << endl;
+                system("pause");
+                break;
+            }
+        } while (pilihan != 5);
+    }
+
+    void exitApp()
+    {
+        system("cls");
+        cout << "Thank you for using our application" << endl;
+        system("pause");
+        exit(0);
+    }
+};
+
+int main(int argc, const char **argv)
+{
+    // Clear screen
+    system("cls");
+    View view;
+    view.start();
     return 0;
 }
