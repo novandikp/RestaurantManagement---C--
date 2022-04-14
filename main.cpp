@@ -224,7 +224,8 @@ public:
     Bill()
     {
         this->customer_name = "";
-        this->table = nullptr;
+        Table *tableA = new Table();
+        this->table = table;
         this->waiter = Waiter();
         this->isPayed = false;
         this->status = Waiting;

@@ -1,1 +1,1 @@
-getchar();
+Nu
